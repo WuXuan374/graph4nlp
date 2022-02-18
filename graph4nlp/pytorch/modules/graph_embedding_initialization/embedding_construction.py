@@ -411,12 +411,12 @@ class BertEmbedding(nn.Module):
         self.bert_doc_stride = doc_stride
         self.fix_emb = fix_emb
 
-        from transformers import BertModel
-        from transformers import BertTokenizer
+        from transformers import BertModel, BertTokenizer, BertConfig
 
         print("[ Using pretrained BERT embeddings ]")
+        self.bert_config = BertConfig.from_pretrained(name, output_hidden_states=True, return_dict=True)
         self.bert_tokenizer = BertTokenizer.from_pretrained(name, do_lower_case=lower_case)
-        self.bert_model = BertModel.from_pretrained(name)
+        self.bert_model = BertModel.from_pretrained(name, config=self.bert_config)
         if fix_emb:
             print("[ Fix BERT layers ]")
             self.bert_model.eval()
@@ -490,8 +490,6 @@ class BertEmbedding(nn.Module):
             bert_xd.view(-1, bert_xd.size(-1)),
             token_type_ids=None,
             attention_mask=bert_xd_mask.view(-1, bert_xd_mask.size(-1)),
-            output_hidden_states=True,
-            return_dict=True,
         )
 
         all_encoder_layers = encoder_outputs["hidden_states"][
